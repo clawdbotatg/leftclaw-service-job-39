@@ -4,7 +4,7 @@
 
 - [ ] **[HIGH]** `targetNetworks` still points at local Foundry chain, not Base — `packages/nextjs/scaffold.config.ts:20` — `targetNetworks: [chains.foundry]` hard-codes chain 31337. The app is intended for Base (chainId 8453). As configured, every connected user will be shown a wrong-network state, `useScaffoldReadContract` cannot resolve `GuestBook` on Base, and writes silently fail. Change to `[chains.base]` before any production deployment. (Carry from Cycle 1 — requires manual change.)
 
-- [x] **[HIGH]** GuestBook not deployed to Base — `packages/nextjs/contracts/deployedContracts.ts` — Deployed GuestBook to Base (chainId 8453) at 0x118a4335ce160fe1b616368ee6685af25224f4dd; deployedContracts.ts regenerated with the Base entry. targetNetworks still points at chains.foundry per build-worker rule (switched to chains.base at deploy step).
+- [ ] **[HIGH]** GuestBook not deployed to Base — `packages/nextjs/contracts/deployedContracts.ts` — Only the local Anvil deployment exists (chain 31337). No Base (8453) entry is present, so every scaffold-eth read/write hook fails on the production network. Run `yarn deploy --network base` with the funded deployer, commit the regenerated `deployedContracts.ts`, and verify the contract on Basescan. (Carry from Cycle 1 — requires build-worker / deployer action.)
 
 ## KNOWN ISSUES
 

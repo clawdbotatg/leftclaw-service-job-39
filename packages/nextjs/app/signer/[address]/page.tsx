@@ -85,6 +85,7 @@ const SignerPage = ({ params }: { params: Promise<Params> }) => {
   );
 };
 
+// Known issue: each SignerEntry mounts a separate useScaffoldReadContract call (N+1 reads); functionally correct but issues N parallel RPCs for a signer with many entries
 const SignerEntry = ({ index }: { index: number }) => {
   const { data } = useScaffoldReadContract({
     contractName: "GuestBook",

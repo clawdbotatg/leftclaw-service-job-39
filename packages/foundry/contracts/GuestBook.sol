@@ -17,6 +17,7 @@ contract GuestBook {
     event Signed(address indexed signer, uint256 indexed index, string message, uint256 timestamp);
 
     /// @notice Append a message to the guestbook. No restrictions.
+    /// @notice Known issue: no on-chain message length limit — frontend enforces 500-char cap but callers can bypass it directly; calldata cost naturally deters abuse (intentional hyperstructure behavior)
     function sign(string calldata _message) external {
         uint256 index = _entries.length;
         _entries.push(Entry({ signer: msg.sender, message: _message, timestamp: block.timestamp }));

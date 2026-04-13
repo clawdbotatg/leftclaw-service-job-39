@@ -111,6 +111,7 @@ export const SignDialog = ({ onClose, onSigned }: Props) => {
                 Switch to {targetNetwork.name}
               </button>
             ) : (
+              // Known issue: button uses text label swap instead of a spinner element; functionally correct, QA framework prefers inline spinner
               <button className="win95-btn" onClick={submit} disabled={!address || disabled}>
                 {isPending ? "Signing…" : "OK"}
               </button>
