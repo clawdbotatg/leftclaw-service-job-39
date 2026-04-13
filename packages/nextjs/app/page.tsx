@@ -1,84 +1,92 @@
-
 "use client";
 
-import { useAccount } from "wagmi";
-import { Address } from "@scaffold-ui/components";
+import { useCallback, useEffect, useState } from "react";
 import type { NextPage } from "next";
-import { hardhat } from "viem/chains";
-import Link from "next/link";
-import { BugAntIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
-import { useTargetNetwork } from "~~/hooks/scaffold-eth";
-
+import { EntryList } from "~~/components/guestbook/EntryList";
+import { SignDialog } from "~~/components/guestbook/SignDialog";
+import { Win95Window } from "~~/components/guestbook/Win95Window";
+import { useScaffoldReadContract, useScaffoldWatchContractEvent } from "~~/hooks/scaffold-eth";
 
 const Home: NextPage = () => {
-  const { address: connectedAddress } = useAccount();
-  const { targetNetwork } = useTargetNetwork();
+  const [open, setOpen] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [highlightIndex, setHighlightIndex] = useState<number | null>(null);
+
+  const { data: totalBig, refetch: refetchCount } = useScaffoldReadContract({
+    contractName: "GuestBook",
+    functionName: "getEntryCount",
+  });
+  const total = totalBig ? Number(totalBig) : 0;
+
+  const onSigned = useCallback(() => {
+    setRefreshKey(k => k + 1);
+  }, []);
+
+  // Watch for new Signed events (from anyone) to keep the list live.
+  useScaffoldWatchContractEvent({
+    contractName: "GuestBook",
+    eventName: "Signed",
+    onLogs: logs => {
+      if (logs.length === 0) return;
+      const last = logs[logs.length - 1];
+      const index = last.args?.index;
+      if (typeof index === "bigint") {
+        setHighlightIndex(Number(index));
+      }
+      setRefreshKey(k => k + 1);
+      refetchCount();
+    },
+  });
+
+  // Clear the highlight after a few seconds.
+  useEffect(() => {
+    if (highlightIndex == null) return;
+    const id = setTimeout(() => setHighlightIndex(null), 4000);
+    return () => clearTimeout(id);
+  }, [highlightIndex]);
 
   return (
-    <>
-      <div className="flex items-center flex-col grow pt-10">
-        <div className="px-5">
-          <h1 className="text-center">
-            <span className="block text-2xl mb-2">Welcome to</span>
-            <span className="block text-4xl font-bold">Scaffold-ETH 2</span>
-            
-          </h1>
-          <div className="flex justify-center items-center space-x-2 flex-col">
-            <p className="my-2 font-medium">Connected Address:</p>
-            <Address
-              address={connectedAddress}
-              chain={targetNetwork}
-              blockExplorerAddressLink={
-                targetNetwork.id === hardhat.id ? `/blockexplorer/address/${connectedAddress}` : undefined
-              }
-            />
-          </div>
-          
-<p className="text-center text-lg">
-  Get started by editing{" "}
-  <code className="italic bg-base-300 text-base font-bold max-w-full break-words break-all inline-block">
-    packages/nextjs/app/page.tsx
-  </code>
-</p>
-<p className="text-center text-lg">
-  Edit your smart contract{" "}
-  <code className="italic bg-base-300 text-base font-bold max-w-full break-words break-all inline-block">
-    YourContract.sol
-  </code>{" "}
-  in{" "}
-  <code className="italic bg-base-300 text-base font-bold max-w-full break-words break-all inline-block">
-    packages/hardhat/contracts
-  </code>
-</p>
-
-        </div>
-
-        <div className="grow bg-base-300 w-full mt-16 px-8 py-12">
-          <div className="flex justify-center items-center gap-12 flex-col md:flex-row">
-            <div className="flex flex-col bg-base-100 px-10 py-10 text-center items-center max-w-xs rounded-3xl">
-              <BugAntIcon className="h-8 w-8 fill-secondary" />
-              <p>
-                Tinker with your smart contract using the{" "}
-                <Link href="/debug" passHref className="link">
-                  Debug Contracts
-                </Link>{" "}
-                tab.
-              </p>
+    <div className="flex flex-col items-center px-4 py-6" style={{ flex: 1, alignSelf: "stretch" }}>
+      <div style={{ width: "100%", maxWidth: 820 }}>
+        <Win95Window title="📖 Onchain Guestbook — [Read Only]">
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              flexWrap: "wrap",
+              gap: 10,
+              marginBottom: 10,
+            }}
+          >
+            <div>
+              <h1 style={{ fontSize: 18, margin: "0 0 2px" }}>The Onchain Guestbook</h1>
+              <div style={{ fontSize: 12, color: "#202020" }}>
+                <span className="win95-badge">{total.toLocaleString()}</span>{" "}
+                {total === 1 ? "person has" : "people have"} signed. Add yours — it lives forever.
+              </div>
             </div>
-            <div className="flex flex-col bg-base-100 px-10 py-10 text-center items-center max-w-xs rounded-3xl">
-              <MagnifyingGlassIcon className="h-8 w-8 fill-secondary" />
-              <p>
-                Explore your local transactions with the{" "}
-                <Link href="/blockexplorer" passHref className="link">
-                  Block Explorer
-                </Link>{" "}
-                tab.
-              </p>
+            <button className="win95-btn" onClick={() => setOpen(true)} style={{ fontWeight: 700 }}>
+              ✎ Sign the Guestbook
+            </button>
+          </div>
+
+          <fieldset className="win95-fieldset">
+            <legend>Entries</legend>
+            <EntryList refreshKey={refreshKey} highlightIndex={highlightIndex} />
+          </fieldset>
+
+          <div className="win95-statusbar" style={{ marginTop: 10, padding: 0 }}>
+            <div className="win95-status-field">Tip: click any signer to see every message they&apos;ve left.</div>
+            <div className="win95-status-field" style={{ flex: 0, minWidth: 140, textAlign: "right" }}>
+              {total.toLocaleString()} total
             </div>
           </div>
-        </div>
+        </Win95Window>
       </div>
-    </>
+
+      {open ? <SignDialog onClose={() => setOpen(false)} onSigned={onSigned} /> : null}
+    </div>
   );
 };
 

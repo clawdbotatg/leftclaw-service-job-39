@@ -2,11 +2,10 @@
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
-@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
-
 @theme {
   --shadow-center: 0 0 12px -2px rgb(0 0 0 / 0.05);
   --animate-pulse-fast: pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --font-win95: "MS Sans Serif", "Microsoft Sans Serif", "Tahoma", "Geneva", "Verdana", sans-serif;
 }
 
 @plugin "daisyui" {
@@ -15,66 +14,57 @@
     dark --prefersdark;
 }
 
+/* Windows 95 palette mapped into DaisyUI light theme so SE-2 internals still render sensibly. */
 @plugin "daisyui/theme" {
   name: "light";
 
-  --color-primary: #93bbfb;
-  --color-primary-content: #212638;
-  --color-secondary: #dae8ff;
-  --color-secondary-content: #212638;
-  --color-accent: #93bbfb;
-  --color-accent-content: #212638;
-  --color-neutral: #212638;
+  --color-primary: #000080;
+  --color-primary-content: #ffffff;
+  --color-secondary: #c0c0c0;
+  --color-secondary-content: #000000;
+  --color-accent: #000080;
+  --color-accent-content: #ffffff;
+  --color-neutral: #000000;
   --color-neutral-content: #ffffff;
-  --color-base-100: #ffffff;
-  --color-base-200: #f4f8ff;
-  --color-base-300: #dae8ff;
-  --color-base-content: #212638;
-  --color-info: #93bbfb;
-  --color-success: #34eeb6;
-  --color-warning: #ffcf72;
-  --color-error: #ff8863;
+  --color-base-100: #c0c0c0;
+  --color-base-200: #008080;
+  --color-base-300: #a8a8a8;
+  --color-base-content: #000000;
+  --color-info: #000080;
+  --color-success: #008000;
+  --color-warning: #ffff00;
+  --color-error: #ff0000;
 
-  --radius-field: 9999rem;
-  --radius-box: 1rem;
+  --radius-field: 0;
+  --radius-box: 0;
   --tt-tailw: 6px;
 }
 
 @plugin "daisyui/theme" {
   name: "dark";
 
-  --color-primary: #212638;
-  --color-primary-content: #f9fbff;
-  --color-secondary: #323f61;
-  --color-secondary-content: #f9fbff;
-  --color-accent: #4969a6;
-  --color-accent-content: #f9fbff;
-  --color-neutral: #f9fbff;
-  --color-neutral-content: #385183;
-  --color-base-100: #385183;
-  --color-base-200: #2a3655;
-  --color-base-300: #212638;
-  --color-base-content: #f9fbff;
-  --color-info: #385183;
-  --color-success: #34eeb6;
-  --color-warning: #ffcf72;
-  --color-error: #ff8863;
+  --color-primary: #000080;
+  --color-primary-content: #ffffff;
+  --color-secondary: #c0c0c0;
+  --color-secondary-content: #000000;
+  --color-accent: #000080;
+  --color-accent-content: #ffffff;
+  --color-neutral: #000000;
+  --color-neutral-content: #ffffff;
+  --color-base-100: #c0c0c0;
+  --color-base-200: #008080;
+  --color-base-300: #a8a8a8;
+  --color-base-content: #000000;
+  --color-info: #000080;
+  --color-success: #008000;
+  --color-warning: #ffff00;
+  --color-error: #ff0000;
 
-  --radius-field: 9999rem;
-  --radius-box: 1rem;
-
+  --radius-field: 0;
+  --radius-box: 0;
   --tt-tailw: 6px;
-  --tt-bg: var(--color-primary);
 }
 
-/*
-  The default border color has changed to `currentColor` in Tailwind CSS v4,
-  so we've added these compatibility styles to make sure everything still
-  looks the same as it did with Tailwind CSS v3.
-
-  If we ever want to remove these styles, we need to add an explicit border
-  color utility to any element that depends on these defaults.
-*/
 @layer base {
   *,
   ::after,
@@ -84,41 +74,302 @@
     border-color: var(--color-gray-200, currentColor);
   }
 
-  p {
-    margin: 1rem 0;
-  }
-
+  html,
   body {
     min-height: 100vh;
+    font-family: var(--font-win95);
+    font-size: 12px;
+    color: #000000;
+    background: #008080;
+    image-rendering: pixelated;
   }
 
-  h1,
-  h2,
-  h3,
-  h4 {
-    margin-bottom: 0.5rem;
-    line-height: 1;
+  h1, h2, h3, h4, h5, h6 {
+    margin: 0 0 0.25rem;
+    line-height: 1.1;
+    font-weight: 700;
+  }
+
+  p {
+    margin: 0.5rem 0;
+  }
+
+  button {
+    font-family: var(--font-win95);
+    font-size: 12px;
+  }
+
+  input, textarea, select {
+    font-family: var(--font-win95);
+    font-size: 12px;
+  }
+
+  code {
+    font-family: "Courier New", Courier, monospace;
   }
 }
 
 :root,
 [data-theme] {
-  background: var(--color-base-200);
+  background: #008080;
 }
 
+/* ===== Windows 95 chrome primitives ===== */
+
+.win95-outset {
+  background: #c0c0c0;
+  border-top: 2px solid #ffffff;
+  border-left: 2px solid #ffffff;
+  border-right: 2px solid #000000;
+  border-bottom: 2px solid #000000;
+  box-shadow: inset -1px -1px 0 0 #808080, inset 1px 1px 0 0 #dfdfdf;
+}
+
+.win95-inset {
+  background: #ffffff;
+  border-top: 2px solid #808080;
+  border-left: 2px solid #808080;
+  border-right: 2px solid #ffffff;
+  border-bottom: 2px solid #ffffff;
+  box-shadow: inset 1px 1px 0 0 #000000, inset -1px -1px 0 0 #dfdfdf;
+}
+
+.win95-inset-gray {
+  background: #c0c0c0;
+  border-top: 2px solid #808080;
+  border-left: 2px solid #808080;
+  border-right: 2px solid #ffffff;
+  border-bottom: 2px solid #ffffff;
+  box-shadow: inset 1px 1px 0 0 #000000, inset -1px -1px 0 0 #dfdfdf;
+}
+
+.win95-window {
+  background: #c0c0c0;
+  border-top: 2px solid #ffffff;
+  border-left: 2px solid #ffffff;
+  border-right: 2px solid #000000;
+  border-bottom: 2px solid #000000;
+  box-shadow: inset -1px -1px 0 0 #808080, inset 1px 1px 0 0 #dfdfdf;
+  padding: 2px;
+  color: #000;
+}
+
+.win95-titlebar {
+  background: linear-gradient(to right, #000080 0%, #1084d0 100%);
+  color: #ffffff;
+  font-weight: 700;
+  padding: 3px 4px 2px 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  user-select: none;
+}
+
+.win95-titlebar-inactive {
+  background: linear-gradient(to right, #808080 0%, #b5b5b5 100%) !important;
+}
+
+.win95-title-controls {
+  display: flex;
+  gap: 2px;
+}
+
+.win95-title-btn {
+  width: 18px;
+  height: 16px;
+  background: #c0c0c0;
+  border-top: 1px solid #ffffff;
+  border-left: 1px solid #ffffff;
+  border-right: 1px solid #000000;
+  border-bottom: 1px solid #000000;
+  box-shadow: inset -1px -1px 0 0 #808080, inset 1px 1px 0 0 #dfdfdf;
+  color: #000;
+  font-size: 10px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+}
+
+.win95-body {
+  padding: 10px;
+}
+
+/* Buttons */
+.win95-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 75px;
+  min-height: 24px;
+  padding: 3px 12px;
+  background: #c0c0c0;
+  color: #000;
+  font-family: var(--font-win95);
+  font-size: 12px;
+  font-weight: 400;
+  border-top: 2px solid #ffffff;
+  border-left: 2px solid #ffffff;
+  border-right: 2px solid #000000;
+  border-bottom: 2px solid #000000;
+  box-shadow: inset -1px -1px 0 0 #808080, inset 1px 1px 0 0 #dfdfdf;
+  cursor: default;
+  user-select: none;
+}
+
+.win95-btn:focus {
+  outline: 1px dotted #000;
+  outline-offset: -4px;
+}
+
+.win95-btn:active:not(:disabled) {
+  border-top: 2px solid #000000;
+  border-left: 2px solid #000000;
+  border-right: 2px solid #ffffff;
+  border-bottom: 2px solid #ffffff;
+  box-shadow: inset 1px 1px 0 0 #808080, inset -1px -1px 0 0 #dfdfdf;
+  padding: 4px 11px 2px 13px;
+}
+
+.win95-btn:disabled {
+  color: #808080;
+  text-shadow: 1px 1px 0 #ffffff;
+  cursor: not-allowed;
+}
+
+/* Text inputs */
+.win95-input, .win95-textarea {
+  background: #ffffff;
+  border-top: 2px solid #808080;
+  border-left: 2px solid #808080;
+  border-right: 2px solid #ffffff;
+  border-bottom: 2px solid #ffffff;
+  box-shadow: inset 1px 1px 0 0 #000000, inset -1px -1px 0 0 #dfdfdf;
+  padding: 3px 4px;
+  font-family: var(--font-win95);
+  font-size: 12px;
+  color: #000;
+  width: 100%;
+  outline: none;
+}
+
+.win95-textarea {
+  resize: vertical;
+  min-height: 80px;
+  line-height: 1.3;
+}
+
+/* Link */
+.win95-link {
+  color: #000080;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.win95-link:hover {
+  color: #0000ff;
+}
+
+/* Status bar */
+.win95-statusbar {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  background: #c0c0c0;
+}
+
+.win95-status-field {
+  flex: 1;
+  background: #c0c0c0;
+  border-top: 1px solid #808080;
+  border-left: 1px solid #808080;
+  border-right: 1px solid #ffffff;
+  border-bottom: 1px solid #ffffff;
+  padding: 2px 6px;
+  font-size: 12px;
+}
+
+/* Taskbar / Header */
+.win95-taskbar {
+  background: #c0c0c0;
+  border-top: 2px solid #ffffff;
+  box-shadow: inset 0 1px 0 #dfdfdf;
+  padding: 2px 2px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Entry rows */
+.win95-entry {
+  background: #ffffff;
+  padding: 8px 10px;
+  border-bottom: 1px dotted #808080;
+}
+
+.win95-entry.highlight {
+  background: #fffbcc;
+  animation: win95-flash 1.5s ease-out 2;
+}
+
+@keyframes win95-flash {
+  0% { background: #fff18a; }
+  100% { background: #fffbcc; }
+}
+
+/* Scrollbar styled as Win95 */
+.win95-scroll::-webkit-scrollbar {
+  width: 16px;
+  height: 16px;
+}
+
+.win95-scroll::-webkit-scrollbar-track {
+  background: repeating-conic-gradient(#c0c0c0 0% 25%, #ffffff 0% 50%) 50% / 2px 2px;
+}
+
+.win95-scroll::-webkit-scrollbar-thumb {
+  background: #c0c0c0;
+  border-top: 2px solid #ffffff;
+  border-left: 2px solid #ffffff;
+  border-right: 2px solid #000000;
+  border-bottom: 2px solid #000000;
+  box-shadow: inset -1px -1px 0 0 #808080, inset 1px 1px 0 0 #dfdfdf;
+}
+
+/* Fieldset */
+.win95-fieldset {
+  border: 1px solid #808080;
+  box-shadow: 1px 1px 0 #ffffff;
+  padding: 10px;
+  margin: 6px 0;
+}
+
+.win95-fieldset legend {
+  padding: 0 4px;
+  font-size: 12px;
+}
+
+/* Badge */
+.win95-badge {
+  display: inline-block;
+  padding: 2px 6px;
+  background: #000080;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* Override DaisyUI btn inside win95 context */
 .btn {
-  @apply shadow-md;
-}
-
-.btn.btn-ghost {
   @apply shadow-none;
 }
 
 .link {
+  color: #000080;
   text-underline-offset: 2px;
 }
 
 .link:hover {
   opacity: 80%;
 }
-  

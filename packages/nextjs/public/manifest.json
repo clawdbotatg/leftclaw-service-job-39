@@ -1,5 +1,5 @@
 {
-  name: 'Scaffold-ETH 2 DApp',
-  description: 'A DApp built with Scaffold-ETH',
-  iconPath: 'logo.svg'
+  "name": "Onchain Guestbook",
+  "description": "A permissionless, onchain guestbook on Base. Sign your name, leave a message, live forever.",
+  "iconPath": "logo.svg"
 }
