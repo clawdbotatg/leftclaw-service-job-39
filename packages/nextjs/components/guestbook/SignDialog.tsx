@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useAccount } from "wagmi";
+import { useAccount, useSwitchChain } from "wagmi";
 import { RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
-import { useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
+import { useScaffoldWriteContract, useTargetNetwork } from "~~/hooks/scaffold-eth";
 import { notification } from "~~/utils/scaffold-eth";
 
 type Props = {
@@ -14,10 +14,13 @@ type Props = {
 const MAX_CHARS = 500;
 
 export const SignDialog = ({ onClose, onSigned }: Props) => {
-  const { address } = useAccount();
+  const { address, chain } = useAccount();
+  const { targetNetwork } = useTargetNetwork();
+  const { switchChain } = useSwitchChain();
   const [message, setMessage] = useState("");
   const { writeContractAsync, isPending } = useScaffoldWriteContract({ contractName: "GuestBook" });
 
+  const isWrongNetwork = address !== undefined && chain?.id !== targetNetwork.id;
   const trimmed = message.trim();
   const disabled = !trimmed || isPending;
 
@@ -103,9 +106,15 @@ export const SignDialog = ({ onClose, onSigned }: Props) => {
             <button className="win95-btn" onClick={onClose} disabled={isPending}>
               Cancel
             </button>
-            <button className="win95-btn" onClick={submit} disabled={!address || disabled}>
-              {isPending ? "Signing…" : "OK"}
-            </button>
+            {isWrongNetwork ? (
+              <button className="win95-btn" onClick={() => switchChain?.({ chainId: targetNetwork.id })}>
+                Switch to {targetNetwork.name}
+              </button>
+            ) : (
+              <button className="win95-btn" onClick={submit} disabled={!address || disabled}>
+                {isPending ? "Signing…" : "OK"}
+              </button>
+            )}
           </div>
         </div>
       </div>

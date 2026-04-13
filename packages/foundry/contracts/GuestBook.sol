@@ -10,6 +10,7 @@ contract GuestBook {
         uint256 timestamp;
     }
 
+    /// @notice Known issue: _entries and _entryIndicesBySigner[signer] grow forever — intentional hyperstructure property; getEntries is paginated to mitigate per-call gas
     Entry[] private _entries;
     mapping(address => uint256[]) private _entryIndicesBySigner;
 

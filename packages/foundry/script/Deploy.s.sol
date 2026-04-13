@@ -15,7 +15,7 @@ contract DeployScript is ScaffoldETHDeploy {
 
         deployments.push(Deployment({ name: "GuestBook", addr: address(guestBook) }));
 
-        // GuestBook has no owner/admin/treasury roles by design — it is a hyperstructure.
+        /// @notice Known issue: no privileged-role transfer to the client address — GuestBook is a hyperstructure with no owner/admin/treasury by design
         // Nothing to transfer to the client address.
     }
 }

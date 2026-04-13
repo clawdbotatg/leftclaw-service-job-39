@@ -80,6 +80,7 @@
     font-family: var(--font-win95);
     font-size: 12px;
     color: #000000;
+    /* Known issue: hardcoded #008080 background violates DaisyUI semantic-color convention — intentional Windows 95 theme per client request */
     background: #008080;
     image-rendering: pixelated;
   }

@@ -76,6 +76,20 @@ Visit our [docs](https://docs.scaffoldeth.io) to learn how to start building wit
 
 To know more about its features, check out our [website](https://scaffoldeth.io).
 
+## Known Issues
+
+The following issues are accepted for this release (see `AUDIT_REPORT.md` for full details):
+
+- **Alchemy API key fallback** — `scaffold.config.ts` falls back to the shared SE-2 template key when `NEXT_PUBLIC_ALCHEMY_API_KEY` is not set. Set the env var on Vercel before going to production.
+- **WalletConnect project ID fallback** — Same pattern: set `NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID` on the hosting platform for production.
+- **RelativeTime hydration warning** — The initial SSR render uses a local-timezone absolute timestamp string; a React hydration mismatch warning may appear in dev. UX is unaffected — the component switches to a relative label after mount.
+- **Signer page: hook called with undefined address** — When the URL contains an invalid address, `useScaffoldReadContract` is still called with `args: [undefined]`. The hook returns no data and the UI is gated on the invalid-address check; not a correctness issue.
+- **Unbounded on-chain arrays** — `_entries` and `_entryIndicesBySigner[signer]` in `GuestBook.sol` grow indefinitely (intentional hyperstructure property). Reads are paginated to defer the gas cliff.
+- **Windows 95 hardcoded background** — `body { background: #008080 }` in `globals.css` is intentional per the client theme request and is not a DaisyUI semantic-color violation in this context.
+- **No privileged-role transfer** — `GuestBook` is a permissionless hyperstructure with no owner/admin/treasury roles; the deploy script performs no role transfer by design.
+
+> **Pre-production action required:** `GuestBook` must be deployed to Base mainnet (`yarn deploy --network base`) and `deployedContracts.ts` regenerated. `scaffold.config.ts` `targetNetworks` must also be updated to `[chains.base]` before the frontend is live.
+
 ## Contributing to Scaffold-ETH 2
 
 We welcome contributions to Scaffold-ETH 2!

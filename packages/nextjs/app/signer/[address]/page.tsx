@@ -15,6 +15,7 @@ const SignerPage = ({ params }: { params: Promise<Params> }) => {
   const valid = typeof raw === "string" && isAddress(raw);
   const address = (valid ? (raw as `0x${string}`) : undefined) as `0x${string}` | undefined;
 
+  // Known issue: useScaffoldReadContract called with potentially-undefined address when isAddress(raw) is false; hook returns no data in that case — benign, UI is already gated on !address
   const { data: indicesData } = useScaffoldReadContract({
     contractName: "GuestBook",
     functionName: "getEntriesBySigner",

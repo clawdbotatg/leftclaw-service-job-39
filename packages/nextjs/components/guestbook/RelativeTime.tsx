@@ -25,6 +25,7 @@ function formatAbsolute(ts: number) {
 
 export const RelativeTime = ({ timestamp }: Props) => {
   const ts = typeof timestamp === "bigint" ? Number(timestamp) : timestamp;
+  // Known issue: initial state uses formatAbsolute which depends on local timezone; may produce a React hydration mismatch warning on SSR — UX unaffected, useEffect swaps to relative time after mount
   const [label, setLabel] = useState(formatAbsolute(ts));
 
   useEffect(() => {
