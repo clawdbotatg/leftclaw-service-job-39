@@ -16,17 +16,25 @@ export const wagmiConfig = createConfig({
   chains: enabledChains,
   connectors: wagmiConnectors(),
   ssr: true,
-  // Known issue: bare http() fallback precedes Alchemy when using DEFAULT_ALCHEMY_API_KEY — set NEXT_PUBLIC_ALCHEMY_API_KEY for correct RPC priority (Alchemy moves to position 0)
+  // NEXT_PUBLIC_ALCHEMY_API_KEY is REQUIRED for production. Next.js inlines NEXT_PUBLIC_* at build time,
+  // so it must be set in the build shell (not just at runtime). When a non-default key is configured,
+  // Alchemy becomes the primary transport (position 0); the bare http() falls back to the chain's
+  // public RPC only if Alchemy errors. Without the key, the bare http() fallback precedes Alchemy.
   client: ({ chain }) => {
     const mainnetFallbackWithDefaultRPC = [http("https://mainnet.rpc.buidlguidl.com")];
-    let rpcFallbacks = [...(chain.id === mainnet.id ? mainnetFallbackWithDefaultRPC : []), http()];
+    const isUsingDefaultKey = scaffoldConfig.alchemyApiKey === DEFAULT_ALCHEMY_API_KEY;
+    // When an Alchemy key is configured, drop the bare http() public fallback to avoid rate-limited public RPCs.
+    // Keep it only as a last-resort fallback when running with the default (shared) key.
+    let rpcFallbacks = [
+      ...(chain.id === mainnet.id ? mainnetFallbackWithDefaultRPC : []),
+      ...(isUsingDefaultKey ? [http()] : []),
+    ];
     const rpcOverrideUrl = (scaffoldConfig.rpcOverrides as ScaffoldConfig["rpcOverrides"])?.[chain.id];
     if (rpcOverrideUrl) {
       rpcFallbacks = [http(rpcOverrideUrl), ...rpcFallbacks];
     } else {
       const alchemyHttpUrl = getAlchemyHttpUrl(chain.id);
       if (alchemyHttpUrl) {
-        const isUsingDefaultKey = scaffoldConfig.alchemyApiKey === DEFAULT_ALCHEMY_API_KEY;
         rpcFallbacks = isUsingDefaultKey
           ? [...rpcFallbacks, http(alchemyHttpUrl)]
           : [http(alchemyHttpUrl), ...rpcFallbacks];

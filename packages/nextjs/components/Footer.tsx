@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { Address } from "@scaffold-ui/components";
+import { useDeployedContractInfo } from "~~/hooks/scaffold-eth/useDeployedContractInfo";
 import { useTargetNetwork } from "~~/hooks/scaffold-eth/useTargetNetwork";
 
 const pad2 = (n: number) => n.toString().padStart(2, "0");
@@ -10,6 +12,7 @@ const pad2 = (n: number) => n.toString().padStart(2, "0");
  */
 export const Footer = () => {
   const { targetNetwork } = useTargetNetwork();
+  const { data: guestBook } = useDeployedContractInfo({ contractName: "GuestBook" });
   const [now, setNow] = useState<Date | null>(null);
 
   useEffect(() => {
@@ -28,7 +31,14 @@ export const Footer = () => {
         <span>Network: </span>
         <strong>{targetNetwork.name}</strong>
       </div>
-      <div className="win95-status-field">Onchain Guestbook — C:\\GUESTBOOK\\INDEX.HTM</div>
+      <div className="win95-status-field" style={{ display: "flex", alignItems: "center", gap: 6 }}>
+        <span>GuestBook:</span>
+        {guestBook?.address ? (
+          <Address address={guestBook.address} onlyEnsOrAddress />
+        ) : (
+          <span style={{ opacity: 0.6 }}>not deployed</span>
+        )}
+      </div>
       <div className="win95-status-field" style={{ flex: 0, minWidth: 90, textAlign: "center" }}>
         {timeLabel}
       </div>

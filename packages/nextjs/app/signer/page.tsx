@@ -1,21 +1,20 @@
 "use client";
 
-import { use } from "react";
+import { Suspense } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { isAddress } from "viem";
 import { Entry, EntryRow } from "~~/components/guestbook/EntryRow";
 import { SignerDisplay } from "~~/components/guestbook/SignerDisplay";
 import { Win95Window } from "~~/components/guestbook/Win95Window";
 import { useScaffoldReadContract } from "~~/hooks/scaffold-eth";
 
-type Params = { address: string };
-
-const SignerPage = ({ params }: { params: Promise<Params> }) => {
-  const { address: raw } = use(params);
+const SignerPageInner = () => {
+  const searchParams = useSearchParams();
+  const raw = searchParams.get("address") ?? "";
   const valid = typeof raw === "string" && isAddress(raw);
   const address = (valid ? (raw as `0x${string}`) : undefined) as `0x${string}` | undefined;
 
-  // Known issue: useScaffoldReadContract called with potentially-undefined address when isAddress(raw) is false; hook returns no data in that case — benign, UI is already gated on !address
   const { data: indicesData } = useScaffoldReadContract({
     contractName: "GuestBook",
     functionName: "getEntriesBySigner",
@@ -85,7 +84,8 @@ const SignerPage = ({ params }: { params: Promise<Params> }) => {
   );
 };
 
-// Known issue: each SignerEntry mounts a separate useScaffoldReadContract call (N+1 reads); functionally correct but issues N parallel RPCs for a signer with many entries
+// Each SignerEntry mounts a separate useScaffoldReadContract call (N+1 reads);
+// fine for small N, but note if a signer has hundreds of entries this fires hundreds of RPCs.
 const SignerEntry = ({ index }: { index: number }) => {
   const { data } = useScaffoldReadContract({
     contractName: "GuestBook",
@@ -101,5 +101,23 @@ const SignerEntry = ({ index }: { index: number }) => {
   const entry: Entry = { signer, message, timestamp };
   return <EntryRow entry={entry} index={index} />;
 };
+
+// useSearchParams requires a Suspense boundary in the app router; wrapping keeps
+// the static-export build happy.
+const SignerPage = () => (
+  <Suspense
+    fallback={
+      <div className="flex flex-col items-center px-4 py-6" style={{ flex: 1, alignSelf: "stretch" }}>
+        <div style={{ width: "100%", maxWidth: 820 }}>
+          <Win95Window title="👤 Signer Details">
+            <div style={{ padding: 24, textAlign: "center", color: "#404040" }}>Loading…</div>
+          </Win95Window>
+        </div>
+      </div>
+    }
+  >
+    <SignerPageInner />
+  </Suspense>
+);
 
 export default SignerPage;

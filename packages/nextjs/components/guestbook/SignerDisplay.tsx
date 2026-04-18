@@ -24,7 +24,7 @@ export const SignerDisplay = ({ address, asLink = true }: Props) => {
   if (!asLink) return content;
 
   return (
-    <Link href={`/signer/${address}`} passHref className="win95-link" style={{ textDecoration: "underline" }}>
+    <Link href={`/signer/?address=${address}`} passHref className="win95-link" style={{ textDecoration: "underline" }}>
       {label}
     </Link>
   );

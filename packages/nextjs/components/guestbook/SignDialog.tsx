@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useAccount, useSwitchChain } from "wagmi";
 import { RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
-import { useScaffoldWriteContract, useTargetNetwork } from "~~/hooks/scaffold-eth";
+import { useScaffoldWriteContract, useTargetNetwork, useWriteAndOpen } from "~~/hooks/scaffold-eth";
 import { notification } from "~~/utils/scaffold-eth";
 
 type Props = {
@@ -19,6 +19,7 @@ export const SignDialog = ({ onClose, onSigned }: Props) => {
   const { switchChain } = useSwitchChain();
   const [message, setMessage] = useState("");
   const { writeContractAsync, isPending } = useScaffoldWriteContract({ contractName: "GuestBook" });
+  const { writeAndOpen } = useWriteAndOpen();
 
   const isWrongNetwork = address !== undefined && chain?.id !== targetNetwork.id;
   const trimmed = message.trim();
@@ -27,7 +28,9 @@ export const SignDialog = ({ onClose, onSigned }: Props) => {
   const submit = async () => {
     if (!trimmed) return;
     try {
-      await writeContractAsync({ functionName: "sign", args: [trimmed] });
+      // Mobile: fire the TX first so WalletConnect can relay the request,
+      // then deep link the user back to their wallet app to sign (no-op on desktop).
+      await writeAndOpen(() => writeContractAsync({ functionName: "sign", args: [trimmed] }));
       notification.success("Your message was signed onto the chain.");
       setMessage("");
       onSigned();

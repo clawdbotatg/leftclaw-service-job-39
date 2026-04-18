@@ -1,8 +1,12 @@
 import type { Metadata } from "next";
 
-const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
-  ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-  : `http://localhost:${process.env.PORT || 3000}`;
+// Prefer NEXT_PUBLIC_PRODUCTION_URL so the OG image unfurls correctly from the live IPFS URL.
+// Next.js inlines NEXT_PUBLIC_* at build time — set it in the build shell before `yarn build`.
+const baseUrl = process.env.NEXT_PUBLIC_PRODUCTION_URL
+  ? process.env.NEXT_PUBLIC_PRODUCTION_URL
+  : process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : `http://localhost:${process.env.PORT || 3000}`;
 const titleTemplate = "%s | Onchain Guestbook";
 
 export const getMetadata = ({

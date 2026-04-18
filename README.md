@@ -1,99 +1,97 @@
-# 🏗 Scaffold-ETH 2
+# 📖 Onchain Guestbook — Windows 95 Edition
 
-<h4 align="center">
-  <a href="https://docs.scaffoldeth.io">Documentation</a> |
-  <a href="https://scaffoldeth.io">Website</a>
-</h4>
+A permanent, public guestbook that lives entirely on Base. Leave a message and your signature stays on chain forever — no edits, no deletes. The UI is styled as a Windows 95 desktop app, beveled chrome, taskbar, status bar, and all.
 
-🧪 An open-source, up-to-date toolkit for building decentralized applications (dapps) on the Ethereum blockchain. It's designed to make it easier for developers to create and deploy smart contracts and build user interfaces that interact with those contracts.
+- **Live app:** published on IPFS via bgipfs — see the deployment tag / release for the current CID
+- **Chain:** Base mainnet (chain id `8453`)
+- **Contract:** [`0x118a4335CE160FE1B616368Ee6685aF25224f4Dd`](https://basescan.org/address/0x118a4335CE160FE1B616368Ee6685aF25224f4Dd) — `GuestBook`
 
-> [!NOTE]
-> 🤖 Scaffold-ETH 2 is AI-ready! It has everything agents need to build on Ethereum. Check `.agents/`, `.claude/`, `.opencode` or `.cursor/` for more info.
+## What it does
 
-⚙️ Built using NextJS, RainbowKit, Foundry, Wagmi, Viem, and Typescript.
+- Anyone with a wallet on Base can call `sign(string message)` and append a message to the guestbook
+- Every entry is stored on chain with `signer`, `message`, and `timestamp`
+- The frontend reads `getEntryCount()` + `getEntries(offset, limit)` to paginate the book
+- `Signed(address signer, uint256 index, string message, uint256 timestamp)` events are watched live so new signatures appear as soon as they're mined
+- Click any signer to see every entry they've ever left (`/signer/<address>`)
 
-- ✅ **Contract Hot Reload**: Your frontend auto-adapts to your smart contract as you edit it.
-- 🪝 **[Custom hooks](https://docs.scaffoldeth.io/hooks/)**: Collection of React hooks wrapper around [wagmi](https://wagmi.sh/) to simplify interactions with smart contracts with typescript autocompletion.
-- 🧱 [**Components**](https://docs.scaffoldeth.io/components/): Collection of common web3 components to quickly build your frontend.
-- 🔥 **Burner Wallet & Local Faucet**: Quickly test your application with a burner wallet and local faucet.
-- 🔐 **Integration with Wallet Providers**: Connect to different wallet providers and interact with the Ethereum network.
+## How to sign
 
-![Debug Contracts tab](https://github.com/scaffold-eth/scaffold-eth-2/assets/55535804/b237af0c-5027-4849-a5c1-2e31495cccb1)
+1. Open the app on Base mainnet
+2. Click **Sign the Guestbook** in the title bar of the window
+3. Type a message (1–500 characters)
+4. Connect a wallet if you haven't already — MetaMask, WalletConnect, Coinbase Wallet, Rainbow, Ledger, Phantom, and Safe are all wired up
+5. Click **OK**, approve the transaction, wait for one block confirmation, done
 
-## Requirements
+Gas is a few cents on Base. Your message is public and permanent.
 
-Before you begin, you need to install the following tools:
+## Windows 95 aesthetic
 
-- [Node (>= v20.18.3)](https://nodejs.org/en/download/)
-- Yarn ([v1](https://classic.yarnpkg.com/en/docs/install/) or [v2+](https://yarnpkg.com/getting-started/install))
-- [Git](https://git-scm.com/downloads)
+The Win95 theme is intentional and comprehensive. The desktop background is the classic teal `#008080`; chrome is `#c0c0c0`; the title bar is the classic navy-to-blue gradient; buttons have outset/inset bevels that invert on press; the footer is a status-bar taskbar with a live clock. MS Sans Serif is loaded from `next/font` so it works in static export. Field corners are strictly sharp (`--radius-field: 0`) — no rounded anything, this is 1995.
 
-## Quickstart
+## Stack
 
-To get started with Scaffold-ETH 2, follow the steps below:
+- **Contracts:** Solidity + Foundry (`packages/foundry/contracts/GuestBook.sol`)
+- **Frontend:** Next.js App Router + Scaffold-ETH 2, built to static export for IPFS hosting
+- **Wallets:** RainbowKit v2 (MetaMask, WalletConnect, Coinbase, Rainbow, Ledger, Phantom, Safe)
+- **RPC:** Alchemy (set `NEXT_PUBLIC_ALCHEMY_API_KEY` in the build shell)
+- **Hosting:** IPFS via [bgipfs](https://bgipfs.com)
 
-1. Install dependencies if it was skipped in CLI:
+## Running locally
 
-```
-cd my-dapp-example
+Requires Node 20+, Yarn, and Foundry installed.
+
+```bash
+# Install
 yarn install
+
+# Start a local Anvil chain + deploy the GuestBook contract
+yarn chain              # terminal 1
+yarn deploy             # terminal 2 (deploys to localhost)
+yarn start              # terminal 3 — http://localhost:3000
 ```
 
-2. Run a local network in the first terminal:
+Point the frontend at Base instead of Anvil by confirming `packages/nextjs/scaffold.config.ts` has `targetNetworks: [chains.base]` (it does by default in this repo).
 
-```
-yarn chain
-```
+## Deploying
 
-This command starts a local Ethereum network using Foundry. The network runs on your local machine and can be used for testing and development. You can customize the network configuration in `packages/foundry/foundry.toml`.
+Contract deployment to Base mainnet (requires a funded deployer):
 
-3. On a second terminal, deploy the test contract:
-
-```
-yarn deploy
+```bash
+yarn deploy --network base
+yarn verify --network base      # Basescan verification, no API key needed
 ```
 
-This command deploys a test smart contract to the local network. The contract is located in `packages/foundry/contracts` and can be modified to suit your needs. The `yarn deploy` command uses the deploy script located in `packages/foundry/script` to deploy the contract to the network. You can also customize the deploy script.
+Frontend static export for IPFS:
 
-4. On a third terminal, start your NextJS app:
+```bash
+# Set the production URL so the OG image unfurls correctly
+echo 'NEXT_PUBLIC_PRODUCTION_URL=https://<CID>.ipfs.community.bgipfs.com' > packages/nextjs/.env.local
 
+# Build (two-pass build — first pass to get a CID, second pass with that CID baked in)
+cd packages/nextjs
+NEXT_PUBLIC_IPFS_BUILD=true NODE_OPTIONS="--require ./polyfill-localstorage.cjs" yarn build
+
+# Upload
+npx bgipfs upload packages/nextjs/out
 ```
-yarn start
+
+## Contract interface
+
+```solidity
+function sign(string calldata message) external;              // append a message
+function getEntryCount() external view returns (uint256);      // total entries
+function getEntries(uint256 offset, uint256 limit)             // paginated read
+  external view returns (Entry[] memory);
+function getSignerEntryCount(address signer)                   // per-signer count
+  external view returns (uint256);
+function getSignerEntries(address signer, uint256 offset, uint256 limit)
+  external view returns (Entry[] memory);
 ```
 
-Visit your app on: `http://localhost:3000`. You can interact with your smart contract using the `Debug Contracts` page. You can tweak the app config in `packages/nextjs/scaffold.config.ts`.
+`Entry` is `struct Entry { address signer; string message; uint256 timestamp; }`.
 
-Run smart contract test with `yarn foundry:test`
+Messages must be between 1 and 500 bytes. The contract reverts with `"Message empty"` or `"Message too long"` on invalid input. Ownership is transferred to the job client at deployment time; the owner has no special write privileges on the guestbook itself (ownership is there so the project can register/upgrade off-chain integrations without changing the book's contents).
 
-- Edit your smart contracts in `packages/foundry/contracts`
-- Edit your frontend homepage at `packages/nextjs/app/page.tsx`. For guidance on [routing](https://nextjs.org/docs/app/building-your-application/routing/defining-routes) and configuring [pages/layouts](https://nextjs.org/docs/app/building-your-application/routing/pages-and-layouts) checkout the Next.js documentation.
-- Edit your deployment scripts in `packages/foundry/script`
+## License
 
-
-## Documentation
-
-Visit our [docs](https://docs.scaffoldeth.io) to learn how to start building with Scaffold-ETH 2.
-
-To know more about its features, check out our [website](https://scaffoldeth.io).
-
-## Known Issues
-
-The following issues are accepted for this release (see `AUDIT_REPORT.md` for full details):
-
-- **Alchemy API key fallback** — `scaffold.config.ts` falls back to the shared SE-2 template key when `NEXT_PUBLIC_ALCHEMY_API_KEY` is not set. Set the env var on Vercel before going to production.
-- **WalletConnect project ID fallback** — Same pattern: set `NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID` on the hosting platform for production.
-- **Bare `http()` fallback precedes Alchemy (default key)** — When the default Alchemy key is in use, the public RPC is attempted before Alchemy. Resolved by setting `NEXT_PUBLIC_ALCHEMY_API_KEY` in production.
-- **RelativeTime hydration warning** — The initial SSR render uses a local-timezone absolute timestamp string; a React hydration mismatch warning may appear in dev. UX is unaffected — the component switches to a relative label after mount.
-- **Signer page: N+1 RPC reads** — Each `<SignerEntry>` issues an independent `getEntry` call. Functionally correct; batching into a single `getEntries` call is a future optimization.
-- **Signer page: hook called with undefined address** — When the URL contains an invalid address, `useScaffoldReadContract` is still called with `args: [undefined]`. The hook returns no data and the UI is gated on the invalid-address check; not a correctness issue.
-- **No on-chain message length limit** — `sign()` accepts any string; the 500-char cap is frontend-only. Calldata cost naturally deters abuse (intentional hyperstructure behavior).
-- **Submit button uses text label swap** — The "Signing…" / "OK" label change serves the same purpose as a spinner. QA framework prefers an inline spinner element, but functional behavior is identical.
-- **Unbounded on-chain arrays** — `_entries` and `_entryIndicesBySigner[signer]` in `GuestBook.sol` grow indefinitely (intentional hyperstructure property). Reads are paginated to defer the gas cliff.
-- **Windows 95 hardcoded background** — `body { background: #008080 }` in `globals.css` is intentional per the client theme request and is not a DaisyUI semantic-color violation in this context.
-- **No privileged-role transfer** — `GuestBook` is a permissionless hyperstructure with no owner/admin/treasury roles; the deploy script performs no role transfer by design.
-
-## Contributing to Scaffold-ETH 2
-
-We welcome contributions to Scaffold-ETH 2!
-
-Please see [CONTRIBUTING.MD](https://github.com/scaffold-eth/scaffold-eth-2/blob/main/CONTRIBUTING.md) for more information and guidelines for contributing to Scaffold-ETH 2.
+MIT. See `LICENCE`.
